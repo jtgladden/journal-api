@@ -69,6 +69,13 @@ def upsert_entry(user_id, entry_date, entry_type, content):
         conn.close()
         
 def list_entries(user_id, start = None, end = None, entry_type = None):
+    """
+    Fetch a filtered list of journal entries for a specific user.
+
+    The 'start' and 'end' date string filters are completely INCLUSIVE.
+    For example, providing start="2026-10-01" and end="2026-10-31" 
+    will return entries matching those exact boundary dates.
+    """
     conn = get_conn()
 
     sql = "SELECT * FROM journal_entries WHERE user_id = ?"

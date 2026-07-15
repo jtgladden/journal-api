@@ -60,18 +60,47 @@ def upsert_entry(user_id, entry_date, entry_type, content):
                 DO UPDATE SET
                     content = excluded.content,
                     updated_at = excluded.updated_at
+                RETURNING *
             """,
                            (user_id, entry_date, entry_type, content, now, now))
+            row = cursor.fetchone()
+            return dict(row) 
+    finally:
+        conn.close()
+        
+def list_entries(user_id, start = None, end = None, entry_type = None):
+    conn = get_conn()
+
+    sql = "SELECT * FROM journal_entries WHERE user_id = ?"
+    params = [user_id]
+
+    try:
+        cursor = conn.cursor()
+
+        if start is not None:
+            sql += " AND entry_date >= ?"
+            params.append(start)
+        if end is not None:
+            sql += " AND entry_date <= ?"
+            params.append(end)
+        if entry_type is not None:
+            sql += " AND entry_type = ?"
+            params.append(entry_type)
+
+        sql += " ORDER BY entry_date ASC, entry_type ASC;"
+
+        cursor.execute(sql, params)
+        rows = cursor.fetchall()
+        return [dict(row) for row in rows]
     finally:
         conn.close()
 
-
-
-init_journal_store()
-upsert_entry('jar', date.today().isoformat(), 'journal', "This is test 1")
-print(str(get_entry('jar', date.today().isoformat(), 'journal')))
-upsert_entry('jar', date.today().isoformat(), 'journal', "This is test 2")
-print(str(get_entry('jar', date.today().isoformat(), 'journal')))
+#
+# init_journal_store()
+# upsert_entry('jar', date.today().isoformat(), 'journal', "This is test 1")
+# print(str(get_entry('jar', date.today().isoformat(), 'journal')))
+# upsert_entry('jar', date.today().isoformat(), 'journal', "This is test 2")
+# print(str(get_entry('jar', date.today().isoformat(), 'journal')))
 
 
 

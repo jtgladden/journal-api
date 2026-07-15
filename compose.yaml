@@ -1,7 +1,12 @@
 services:
-  nginx:
-    image: nginx:latest
+  journal-api:
+    build: .
+    container_name: journal-api
     restart: unless-stopped
     ports:
-      - 8080:80
+      - 8008:8000
+    volumes:
+      - /mnt/Main/journal:/data
+    environment:
+      JOURNAL_DB: /data/journal.db
 networks: {}
